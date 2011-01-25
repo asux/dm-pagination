@@ -33,6 +33,11 @@ module DataMapper
     attr_reader :total_pages
 
     ##
+    # Onclick link for ajax
+    
+    attr_accessor :onclick
+
+    ##
     # Initialize with _options_.
 
     def initialize options = {}
@@ -74,7 +79,30 @@ module DataMapper
         last_link,
       '</ul>'].join
     end
-
+    
+    def get_onclick(page)
+      self.onclick.gsub(/(\:([^\/'"]+))/, uri_for(page))
+    end
+    
+    def to_ajax uri, options = {}
+      return unless total_pages > 1
+      
+      self.onclick = options[:onclick]
+      
+      @uri, @options = uri, options
+      @size = total_pages
+      
+      [%(<ul class="#{Pagination.defaults[:pager_class]}">),
+        first_link,
+        previous_link,
+        more(:before),
+        intermediate_links.join("\n"),
+        more(:after),
+        next_link,
+        last_link,
+      '</ul>'].join
+    end
+    
     private
 
     ##
@@ -86,10 +114,10 @@ module DataMapper
     end
 
     ##
-    # Link to _page_ with optional anchor tag _contents_.
+    # Link to _page_ with optional anchor tag _contents_. N.B. This overwrites the to_html link_to!
 
     def link_to page, contents = nil
-      %(<a href="#{uri_for(page)}">#{contents || page}</a>)
+      %(<a href="#" onclick="#{self.get_onclick(page)}; return false;">#{contents || page}</a>)
     end
 
     ##
@@ -181,13 +209,10 @@ module DataMapper
     #   /items?page=1   # Adjusts current page => /items?page=2
     #   /items?foo=bar  # Appends page pair    => /items?foo=bar&page=1
     #
-
+    # Overwrites html pager's query string
+      
     def uri_for page
-      case @uri
-      when /\b#{@page_param}=/ ; @uri.gsub /\b#{@page_param}=\d+/, "#{@page_param}=#{page}"
-      when /\?/      ; @uri += "&#{@page_param}=#{page}"
-      else           ; @uri += "?#{@page_param}=#{page}"
-      end
+      "?#{@page_param}=#{page}"
     end
 
   end
