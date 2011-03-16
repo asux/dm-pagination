@@ -87,16 +87,30 @@ module DataMapper
     def to_ajax uri, options = {}
       return unless total_pages > 1
       
+      current_page_index = (1 .. total_pages).to_a.index(current_page)
       self.onclick = options[:onclick]
       
       @uri, @options = uri, options
       @size = total_pages
+      linkies = intermediate_links
+      middles = Array.new
+      if total_pages > 7
+        middles << linkies[current_page_index]
+        middles << linkies[current_page_index+1]
+        middles << linkies[current_page_index+2]
+        middles << (li '', '...')
+        middles << linkies[-3]
+        middles << linkies[-2]
+        middles << linkies[-1]
+      else
+        middles << linkies
+      end
       
       [%(<ul class="#{Pagination.defaults[:pager_class]}">),
         first_link,
         previous_link,
         more(:before),
-        intermediate_links.join("\n"),
+        middles.join("\n"),
         more(:after),
         next_link,
         last_link,
