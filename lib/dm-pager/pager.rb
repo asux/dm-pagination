@@ -93,14 +93,31 @@ module DataMapper
       @size = total_pages
       linkies = intermediate_links
       middles = Array.new
-      if total_pages > 7
-        middles << linkies[current_page_index]
-        middles << linkies[current_page_index+1]
-        middles << linkies[current_page_index+2]
-        middles << (li '', '...')
-        middles << linkies[-3]
-        middles << linkies[-2]
-        middles << linkies[-1]
+      if total_pages > 5
+        case
+        when current_page <= 4
+          middles << linkies[0]
+          middles << linkies[1]
+          middles << linkies[2]
+          middles << linkies[3]
+          middles << linkies[4]
+          middles << (li '', '...')
+        when current_page >= (total_pages - 4)
+          middles << (li '', '...')
+          middles << linkies[-5]
+          middles << linkies[-4]
+          middles << linkies[-3]
+          middles << linkies[-2]
+          middles << linkies[-1]
+        else
+          middles << (li '', '...')
+          middles << linkies[current_page_index - 2]
+          middles << linkies[current_page_index - 1]
+          middles << linkies[current_page_index]
+          middles << linkies[current_page_index + 1]
+          middles << linkies[current_page_index + 2]
+          middles << (li '', '...')
+        end
       else
         middles << linkies
       end
